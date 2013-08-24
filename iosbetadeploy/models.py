@@ -36,6 +36,8 @@ class Device(models.Model):
     email = models.EmailField(default=None, blank=True, null=True)
     push_token = models.CharField(max_length=255, default="")
 
+    def __unicode__(self):
+        return self.name + " " + self.udid
 
 class InstanceAllowedDevice(models.Model):
     device = models.ForeignKey(Device)

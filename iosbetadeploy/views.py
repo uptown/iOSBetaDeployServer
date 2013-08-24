@@ -8,6 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
 from django.core.files import temp
+from django.core.mail import send_mail
+from django.template import loader
+from django.template import Context
 
 import plistlib
 import base64
@@ -132,6 +135,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
                               token=generate_random_from_vschar_set(20)+".proj")
             project.save()
 
+        emails = []
         with transaction.commit_on_success():
             try:
                 instance = Instance(project=project, version=version_string, build_version=bundle_version,
@@ -140,7 +144,8 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
                 for udid in allowed_devices:
                     device, dummy_unused = Device.objects.get_or_create(udid=udid)
                     InstanceAllowedDevice.objects.create(instance=instance, device=device)
-
+                    if len(device.email) > 0:
+                        emails.append(device.email)
                 transaction.commit()
             except Exception:
                 transaction.rollback()
@@ -151,6 +156,11 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             InstanceAllowedDevice.objects.filter(instance=instance).delete()
             instance.delete()
             raise
+
+        t = loader.get_template('Email.html')
+        c = Context({'instance':instance,'project':project})
+        mail_title = 'iOS Beta:'+appname + " " + version_string + "(" + bundle_version + ")"
+        send_mail(mail_title, t.render(c), 'uptown@mironi.pl', emails, fail_silently=False)
         return HttpResponseJson({'project_token:': project.token, 'instance_token': instance.token})
 
 
