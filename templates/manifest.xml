@@ -11,7 +11,7 @@
 					<key>kind</key>
 					<string>software-package</string>
 					<key>url</key>
-					<string>{{ domain }}{% url "file_redirection_view" token=instance.token key=file_key %}</string>
+					<string>http://{{ domain }}{% url "file_redirection_view" token=instance.token key=file_key %}</string>
 				</dict>
 			</array>
 			<key>metadata</key>
