@@ -11,31 +11,30 @@ from django.core.files import temp
 
 import plistlib
 import base64
-from zipfile import ZipFile
+import biplist
 import time
 
-from .models import Device, Project, Instance, InstanceAllowedDevice
-from .decorators import transaction_with_error_handler, error_handling
-from .utils import generate_random_from_vschar_set, HttpResponseJson, encrypt, decrypt
+from zipfile import ZipFile
 
-import biplist
-#sudo pip install biplist
+from .models import Device, Project, Instance, InstanceAllowedDevice
+from .decorators import error_handling
+from .utils import generate_random_from_vschar_set, HttpResponseJson, encrypt, decrypt
 
 def error_handler(e):
     raise Http404
 
-#
-# class DeviceView(View):
-#     @transaction_with_error_handler(error_handler)
-#     def post(self, request):
-#         udid = request.POST['udid']
-#         name = request.POST['name']
-#         device = Device(udid = udid, name = name)
-#         device.save()
-#         return HttpResponseJson({'id':device.id})
-
 class HttpBasicAuthenticationView(View):
+    """
+    class-based view with http basic authentication.
+    usage:
 
+    class SomeView(HttpBasicAuthenticationView):
+        http_method_authentication_needed = ['post']
+
+        def check_permission(self, request):
+            if not request.user.is_staff:
+                raise Http404
+    """
 
     http_method_authentication_needed = []
 
@@ -44,12 +43,12 @@ class HttpBasicAuthenticationView(View):
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-
+        """
+        override dispatch for handling http basic authorization
+        """
         if 'HTTP_AUTHORIZATION' in request.META:
             auth = request.META['HTTP_AUTHORIZATION'].split()
             if len(auth) == 2:
-                # NOTE: We are only support basic authentication for now.
-                #
                 if auth[0].lower() == "basic":
                     username, password = base64.b64decode(auth[1]).split(':')
                     user = authenticate(username=username, password=password)
@@ -65,7 +64,17 @@ class HttpBasicAuthenticationView(View):
 
 
 class ProjectInstanceView(HttpBasicAuthenticationView):
-
+    """
+    get:
+        if token is for project, return project's instances view.
+        elif token is for instance return manifest for instance with file access key.
+        else raise http404
+    post:
+        need http basic authentication.
+        param:
+            instance, iOS application package, normally *.ipa
+        register application.
+    """
     http_method_authentication_needed = ['post']
 
     def check_permission(self, request):
@@ -75,7 +84,6 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
     @error_handling(error_handler)
     def get(self, request, token):
         postfix = token[-4:]
-        print postfix
         if postfix == "proj":
             project = Project.objects.get(token=token)
             instances = Instance.objects.filter(project=project).filter(is_showing=True).order_by('-uploaded_date')
@@ -146,20 +154,19 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         return HttpResponseJson({'project_token:': project.token, 'instance_token': instance.token})
 
 
-
-        #Instance(project=project, )
-
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super(ProjectInstanceView, self).dispatch(*args, **kwargs)
-
-
 class FileRedirectView(View):
-
+    """
+    get:
+        param:
+            token: instance token
+            file_access_key: file_access_key
+        if file_access_key is vaild, return file real url.
+        else raise Http404
+    """
     @error_handling(error_handler)
     def get(self, request, token, key):
         reversed_key = decrypt(key.encode('utf-8'), token.encode('utf-8'))
-        if abs(time.time() - int(reversed_key.split(':')[0])) > 6000:
+        if abs(time.time() - int(reversed_key.split(':')[0])) > 60:
             raise Http404
         return HttpResponseRedirect(Instance.objects.get(token=token).ipa_path.url)
 
