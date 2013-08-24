@@ -17,9 +17,9 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
     url(r'^(?P<token>[\w\.]+)$', ProjectInstanceView.as_view(), name="project_view"),
-    url(r'^(?P<token>[\w\.]+)/(?P<key>[\w=]+)$', FileRedirectView.as_view(), name="file_redirection_view"),
+    url(r'^(?P<token>[\w\.]+)/(?P<key>[\w\-=]+)$', FileRedirectView.as_view(), name="file_redirection_view"),
 )
 
-urlpatterns += patterns('django.views.static',
-    (r'media/(?P<path>.*)', 'serve', {'document_root': settings.MEDIA_ROOT}),
-)
+from django.conf.urls.static import static
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
