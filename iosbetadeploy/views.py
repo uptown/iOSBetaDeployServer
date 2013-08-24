@@ -8,9 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
 from django.core.files import temp
-from django.core.mail import send_mail
-from django.template import loader
-from django.template import Context
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 import plistlib
 import base64
@@ -158,10 +158,15 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             instance.delete()
             raise
 
-        t = loader.get_template('Email.html')
-        c = Context({'instance':instance,'project':project, 'domain': request.META['HTTP_HOST']})
         mail_title = 'iOS Beta:'+appname + " " + version_string + "(" + bundle_version + ")"
-        send_mail(mail_title, t.render(c), 'uptown@mironi.pl', emails, fail_silently=False)
+        from_email = "uptown@mironi.pl"
+
+        html_content = render_to_string('Email.html',
+                                        {'instance': instance,'project': project, 'domain': request.META['HTTP_HOST']})
+        text_content = strip_tags(html_content)
+        msg = EmailMultiAlternatives(mail_title, text_content, from_email, emails)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
         return HttpResponseJson({'project_token:': project.token, 'instance_token': instance.token})
 
 

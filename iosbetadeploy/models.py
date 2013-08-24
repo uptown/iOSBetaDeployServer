@@ -34,7 +34,7 @@ class Device(models.Model):
     udid = models.CharField(max_length=50)
     name = models.CharField(max_length=50,default="Unknown Device")
     email = models.EmailField(default=None, blank=True, null=True)
-    push_token = models.CharField(max_length=255, default="")
+    push_token = models.CharField(max_length=255, default="", blank=True)
 
     def __unicode__(self):
         return self.name + " " + self.udid
