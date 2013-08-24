@@ -12,7 +12,7 @@ iOS Beta Deploy Server
 <ul id="list">
 {% for instance in instances %}
     {% url "project_view" instance.token as instance_url %}
-    <li class="ui-state-default"><a href="itms-services://?action=download-manifest&url={{ instance_url|urlencode }}">
+    <li class="ui-state-default"><a href="itms-services://?action=download-manifest&url={{ domain|urlencode }}{{ instance_url|urlencode }}">
         {{ project.name }} {{ instance.version }}(BN {{ instance.build_version }}) {{ instance.create_date|date:"y/m/d h:m" }}</a>
     </li>
 {% endfor %}

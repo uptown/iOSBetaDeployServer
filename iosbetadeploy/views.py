@@ -90,7 +90,8 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         if postfix == "proj":
             project = Project.objects.get(token=token)
             instances = Instance.objects.filter(project=project).filter(is_showing=True).order_by('-create_date')
-            return render_to_response('Project.html', {"project": project,'instances':instances})
+            return render_to_response('Project.html', {"project": project,'instances':instances,
+                                                       'domain': request.META['HTTP_HOST']})
 
         elif postfix == 'inst':
             instance = Instance.objects.select_related('project__bundle_identifier','project__name').get(token=token)
@@ -158,7 +159,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             raise
 
         t = loader.get_template('Email.html')
-        c = Context({'instance':instance,'project':project})
+        c = Context({'instance':instance,'project':project, 'domain': request.META['HTTP_HOST']})
         mail_title = 'iOS Beta:'+appname + " " + version_string + "(" + bundle_version + ")"
         send_mail(mail_title, t.render(c), 'uptown@mironi.pl', emails, fail_silently=False)
         return HttpResponseJson({'project_token:': project.token, 'instance_token': instance.token})
