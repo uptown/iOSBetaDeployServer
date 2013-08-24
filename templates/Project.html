@@ -12,7 +12,7 @@ iOS Beta Deploy Server
 <ul id="list">
 {% for instance in instances %}
     <li class="ui-state-default"><a href="{% url "project_view" instance.token %}">
-        {{ project.name }} {{ instance.version }}(BN {{ instance.build_version }}) {{ instance.uploaded_date|date:"y/m/d h:m" }}</a>
+        {{ project.name }} {{ instance.version }}(BN {{ instance.build_version }}) {{ instance.create_date|date:"y/m/d h:m" }}</a>
     </li>
 {% endfor %}
 </ul>
