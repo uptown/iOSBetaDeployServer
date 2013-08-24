@@ -145,7 +145,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
                 for udid in allowed_devices:
                     device, dummy_unused = Device.objects.get_or_create(udid=udid)
                     InstanceAllowedDevice.objects.create(instance=instance, device=device)
-                    if len(device.email) > 0:
+                    if device.email and len(device.email) > 0:
                         emails.append(device.email)
                 transaction.commit()
             except Exception:
