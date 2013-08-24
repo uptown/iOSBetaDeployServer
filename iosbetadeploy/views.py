@@ -158,7 +158,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             instance.delete()
             raise
 
-        mail_title = 'iOS Beta:'+appname + " " + version_string + "(" + bundle_version + ")"
+        mail_title = 'iOS Beta:'+appname
         from_email = "uptown@mironi.pl"
 
         html_content = render_to_string('Email.html',
