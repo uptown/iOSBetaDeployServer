@@ -86,7 +86,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         postfix = token[-4:]
         if postfix == "proj":
             project = Project.objects.get(token=token)
-            instances = Instance.objects.filter(project=project).filter(is_showing=True).order_by('-uploaded_date')
+            instances = Instance.objects.filter(project=project).filter(is_showing=True).order_by('-create_date')
             return render_to_response('Project.html', {"project": project,'instances':instances})
 
         elif postfix == 'inst':
