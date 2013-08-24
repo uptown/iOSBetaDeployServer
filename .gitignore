@@ -3,3 +3,4 @@
 *.pyc
 static
 settings.py
+wsgi.py
