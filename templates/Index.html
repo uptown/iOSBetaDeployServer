@@ -1,0 +1,15 @@
+{% extends "_Base.html" %}
+
+{% block title %}
+iOS Beta Deploy Server
+{% endblock %}
+
+{% block css %}
+{% endblock %}
+{% block body %}
+<ul id="list">
+{% for project in projects %}
+    <li class="ui-state-default"><a href="{% url project_view project.bundle_identifier %}">{{ project.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}
