@@ -91,7 +91,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
 
         elif postfix == 'inst':
             instance = Instance.objects.select_related('project__bundle_identifier','project__name').get(token=token)
-            file_key = encrypt(str(int(time.time()))+':'+generate_random_from_vschar_set(3), token.encode('utf8'))
+            file_key = encrypt((str(int(time.time()))+':'+generate_random_from_vschar_set(3)).encode('utf8'), token.encode('utf8'))
             #TODO: find clear way to get domain
             return render_to_response('manifest.xml', {"instance": instance, 'file_key':file_key,
                                                        'domain': request.META['HTTP_HOST']})

@@ -60,36 +60,37 @@ def unpad_text(padded_text):
 
 
 def encrypt(plaintext, password):
-    salt = Crypto.Random.get_random_bytes(SALT_SIZE)
 
-    key = generate_key(password, salt, NUMBER_OF_ITERATIONS)
+    iv = Crypto.Random.new().read(AES.block_size)
 
-    cipher = AES.new(key, AES.MODE_ECB)
+    key = generate_key(password, iv, NUMBER_OF_ITERATIONS)
+
+
+    cipher = AES.new(key, AES.MODE_CBC, iv)
 
     padded_plaintext = pad_text(plaintext, AES_MULTIPLE)
 
     ciphertext = cipher.encrypt(padded_plaintext)
 
-    ciphertext_with_salt = salt + ciphertext
+    ciphertext_with_salt = iv + ciphertext
 
     return base64.urlsafe_b64encode(ciphertext_with_salt)
-    #return base64.urlsafe_b64encode(ciphertext_with_salt)
 
-    #return encrypt(ciphertext_with_salt, password2)
 
 def decrypt(ciphertext, password):
     ciphertext = base64.urlsafe_b64decode(ciphertext)
+    iv = ciphertext[0:AES.block_size]
 
-    salt = ciphertext[0:SALT_SIZE]
+    ciphertext_sans_salt = ciphertext[AES.block_size:]
 
-    ciphertext_sans_salt = ciphertext[SALT_SIZE:]
+    key = generate_key(password, iv, NUMBER_OF_ITERATIONS)
 
-    key = generate_key(password, salt, NUMBER_OF_ITERATIONS)
-
-    cipher = AES.new(key, AES.MODE_ECB)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
 
     padded_plaintext = cipher.decrypt(ciphertext_sans_salt)
 
     plaintext = unpad_text(padded_plaintext)
-
     return plaintext
+
+
+
