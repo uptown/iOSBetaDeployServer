@@ -107,6 +107,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
     @error_handling(error_handler)
     def post(self, request, token):
         uploaded_file = request.FILES['instance']
+        log = request.POST['description']
         appname = uploaded_file._name[:-4]
         zipped_file = ZipFile(uploaded_file)
         tempdir = temp.gettempdir()
@@ -140,7 +141,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         with transaction.commit_on_success():
             try:
                 instance = Instance(project=project, version=version_string, build_version=bundle_version,
-                                    description="", token=generate_random_from_vschar_set(20)+".inst")
+                                    description=log, token=generate_random_from_vschar_set(20)+".inst")
                 instance.save()
                 for udid in allowed_devices:
                     device, dummy_unused = Device.objects.get_or_create(udid=udid)

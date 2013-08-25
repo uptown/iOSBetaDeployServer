@@ -9,7 +9,10 @@ iOS Beta
 {% block body %}
 <h1>{{ project.name }}</h1>
 {% url "project_view" instance.token as instance_url %}
-<p></p><a href="itms-services://?action=download-manifest&url=http://{{ domain|urlencode }}{{ instance_url|urlencode }}">
+
+<p>Click on iOS Devices. <a href="itms-services://?action=download-manifest&url=http://{{ domain|urlencode }}{{ instance_url|urlencode }}">
     {{ project.name }} {{ instance.version }}(BN {{ instance.build_version }}) {{ instance.create_date|date:"y/m/d h:m" }}</a>
 </p>
+<h2>Change List</h2>
+<p>{{ instance.description }}</p>
 {% endblock %}
