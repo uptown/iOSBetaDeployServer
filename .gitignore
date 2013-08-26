@@ -4,3 +4,4 @@
 static
 settings.py
 wsgi.py
+localizable
