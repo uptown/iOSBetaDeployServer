@@ -25,6 +25,8 @@ from .decorators import error_handling
 from .utils import generate_random_from_vschar_set, HttpResponseJson, encrypt, decrypt
 
 def error_handler(e):
+    import traceback
+    traceback.print_exc()
     raise Http404
 
 class HttpBasicAuthenticationView(View):
@@ -197,6 +199,7 @@ class InstanceFileView(HttpBasicAuthenticationView):
         response['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
         return response
 
+    @error_handling(error_handler)
     def post(self, request, token):
 
         instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
@@ -209,6 +212,7 @@ class InstanceFileView(HttpBasicAuthenticationView):
             options = option.split(',')
 
         contents = request.POST.get('contents')
+        print path
         if not contents:
             uploaded_file = request.FILES['file']
             zipped_file.writestr('Payload/' + instance.name + '.app' + path, uploaded_file.read())
