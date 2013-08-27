@@ -200,7 +200,7 @@ class InstanceFileView(HttpBasicAuthenticationView):
     def post(self, request, token):
 
         instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
-        zipped_file = ZipFile(instance.ipa_path.path, 'w')
+        zipped_file = ZipFile(instance.ipa_path.path, 'a')
 
         path = request.POST['path']
         option = request.POST.get('option')
