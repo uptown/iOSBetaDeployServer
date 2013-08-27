@@ -16,6 +16,7 @@ class Project(models.Model):
 
 class Instance(models.Model):
     token = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=255, blank=True, default="")
     project = models.ForeignKey(Project)
     version = models.CharField(max_length=30)
     build_version = models.CharField(max_length=30)

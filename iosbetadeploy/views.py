@@ -11,7 +11,6 @@ from django.core.files import temp
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django.core.servers.basehttp import FileWrapper
 
 
 import plistlib
@@ -147,7 +146,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         with transaction.commit_on_success():
             try:
                 instance = Instance(project=project, version=version_string, build_version=bundle_version,
-                                    description=log, token=generate_random_from_vschar_set(20)+".inst")
+                                    description=log, token=generate_random_from_vschar_set(20)+".inst", name=appname)
                 instance.save()
                 for udid in allowed_devices:
                     device, dummy_unused = Device.objects.get_or_create(udid=udid)
@@ -190,15 +189,9 @@ class InstanceFileView(HttpBasicAuthenticationView):
         instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
         tempdir = temp.gettempdir()
         zipped_file = ZipFile(instance.ipa_path.path)
-        files = zipped_file.namelist()
-        appname = None
-        for file_name in files:
-            if len(file_name.split('/')) == 3:
-                appname = file_name.split('/')[1]
-                break
         path = request.GET['path']
 
-        extracted_file = zipped_file.extract('Payload/'+appname+path, tempdir)
+        extracted_file = zipped_file.extract('Payload/' + instance.name + '.app' + path, tempdir)
         mime = magic.from_file(extracted_file, mime=True)
         response = HttpResponse(open(extracted_file, "rb"), content_type=mime)
         response['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
@@ -207,16 +200,8 @@ class InstanceFileView(HttpBasicAuthenticationView):
     def post(self, request, token):
 
         instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
-        #todo:app name ...
-        zipped_file_r = ZipFile(instance.ipa_path.path, 'r')
         zipped_file = ZipFile(instance.ipa_path.path, 'w')
-        files = zipped_file_r.namelist()
 
-        appname = None
-        for file_name in files:
-            if len(file_name.split('/')) == 3:
-                appname = file_name.split('/')[1]
-                break
         path = request.POST['path']
         option = request.POST.get('option')
         options = []
@@ -226,11 +211,11 @@ class InstanceFileView(HttpBasicAuthenticationView):
         contents = request.POST.get('contents')
         if not contents:
             uploaded_file = request.FILES['file']
-            zipped_file.writestr('Payload/'+appname+path, uploaded_file.read(), 'w')
+            zipped_file.writestr('Payload/' + instance.name + '.app' + path, uploaded_file.read(), 'w')
         else:
-            if "convert_to_binary_plist":
+            if "convert_to_binary_plist" in options:
                 contents = biplist.writePlistToString(contents)
-            zipped_file.writestr('Payload/'+appname+path, contents, 'w')
+            zipped_file.writestr('Payload/' + instance.name + '.app' + path, contents, 'w')
         return HttpResponse('success')
 
 
