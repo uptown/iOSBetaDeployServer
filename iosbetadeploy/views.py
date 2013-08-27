@@ -215,7 +215,7 @@ class InstanceFileView(AdminRequiredView):
         appname = None
         for file_name in files:
             if len(file_name.split('/')) == 2:
-                appname = file_name[1]
+                appname = file_name.split('/')[1]
                 break
         path = request.GET['path']
 
@@ -235,7 +235,7 @@ class InstanceFileView(AdminRequiredView):
         appname = None
         for file_name in files:
             if len(file_name.split('/')) == 2:
-                appname = file_name[1]
+                appname = file_name.split('/')[1]
                 break
         path = request.POST['path']
         contents = request.POST.get('contents')
