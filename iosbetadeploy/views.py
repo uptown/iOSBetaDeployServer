@@ -207,8 +207,10 @@ class InstanceFileView(HttpBasicAuthenticationView):
     def post(self, request, token):
 
         instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
-        zipped_file = ZipFile(instance.ipa_path.path, 'wr')
-        files = zipped_file.namelist()
+        #todo:app name ...
+        zipped_file_r = ZipFile(instance.ipa_path.path, 'r')
+        zipped_file = ZipFile(instance.ipa_path.path, 'w')
+        files = zipped_file_r.namelist()
 
         appname = None
         for file_name in files:
