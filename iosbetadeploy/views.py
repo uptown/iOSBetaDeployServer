@@ -219,7 +219,7 @@ class InstanceFileView(HttpBasicAuthenticationView):
         contents = request.POST.get('contents')
         if not contents:
             uploaded_file = request.FILES['file']
-            zipped_file.write(uploaded_file.temporary_file_path, 'Payload/'+appname+path, 'w')
+            zipped_file.writestr('Payload/'+appname+'.app'+path, uploaded_file.getvalue(),'w')
         else:
             zipped_file.writestr('Payload/'+appname+'.app'+path, contents.encode('utf8'),'w')
         return HttpResponse('success')
