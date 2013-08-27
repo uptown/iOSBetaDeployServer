@@ -215,12 +215,11 @@ class InstanceFileView(AdminRequiredView):
         appname = None
         for file_name in files:
             if len(file_name.split('/')) == 3:
-                print file_name
                 appname = file_name.split('/')[1]
                 break
         path = request.GET['path']
 
-        extracted_file = zipped_file.extract('Payload/'+appname+'.app'+path, tempdir)
+        extracted_file = zipped_file.extract('Payload/'+appname+path, tempdir)
         mime = magic.from_file(extracted_file, mime=True)
 
         response = HttpResponse(FileWrapper(extracted_file.getvalue()), content_type=mime)
@@ -235,15 +234,14 @@ class InstanceFileView(AdminRequiredView):
 
         appname = None
         for file_name in files:
-            if len(file_name.split('/')) == 2:
-                print file_name
+            if len(file_name.split('/')) == 3:
                 appname = file_name.split('/')[1]
                 break
         path = request.POST['path']
         contents = request.POST.get('contents')
         if not contents:
             uploaded_file = request.FILES['file']
-            zipped_file.write(uploaded_file.temporary_file_path, 'Payload/'+appname+'.app'+path, 'w')
+            zipped_file.write(uploaded_file.temporary_file_path, 'Payload/'+appname+path, 'w')
         else:
             zipped_file.writestr('Payload/'+appname+'.app'+path, contents.encode('utf8'),'w')
         return HttpResponse('success')
