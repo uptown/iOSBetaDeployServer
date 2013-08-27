@@ -211,11 +211,11 @@ class InstanceFileView(HttpBasicAuthenticationView):
         contents = request.POST.get('contents')
         if not contents:
             uploaded_file = request.FILES['file']
-            zipped_file.writestr('Payload/' + instance.name + '.app' + path, uploaded_file.read(), 'w')
+            zipped_file.writestr('Payload/' + instance.name + '.app' + path, uploaded_file.read())
         else:
             if "convert_to_binary_plist" in options:
                 contents = biplist.writePlistToString(contents)
-            zipped_file.writestr('Payload/' + instance.name + '.app' + path, contents, 'w')
+            zipped_file.writestr('Payload/' + instance.name + '.app' + path, contents)
         return HttpResponse('success')
 
 
