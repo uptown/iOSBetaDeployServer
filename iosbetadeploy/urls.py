@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-from iosbetadeploy.views import IndexView, ProjectInstanceView, FileRedirectView
+from iosbetadeploy.views import IndexView, ProjectInstanceView, FileRedirectView, InstanceFileView
 from django.conf import settings
 admin.autodiscover()
 
@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
     url(r'^(?P<token>[\w\.]+)$', ProjectInstanceView.as_view(), name="project_view"),
+    url(r'^(?P<token>[\w\.]+)/file_manager$', InstanceFileView.as_view(), name="instancefile_view"),
     url(r'^(?P<token>[\w\.]+)/(?P<key>[\w\-=]+)$', FileRedirectView.as_view(), name="file_redirection_view"),
 )
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
 from django.views.generic import View
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.db import transaction
 from django.shortcuts import render_to_response, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
@@ -11,13 +11,15 @@ from django.core.files import temp
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.core.servers.basehttp import FileWrapper
+
 
 import plistlib
 import base64
 import biplist
 import time
-
 from zipfile import ZipFile
+import magic
 
 from .models import Device, Project, Instance, InstanceAllowedDevice
 from .decorators import error_handling
@@ -26,23 +28,41 @@ from .utils import generate_random_from_vschar_set, HttpResponseJson, encrypt, d
 def error_handler(e):
     raise Http404
 
-class HttpBasicAuthenticationView(View):
+
+class CheckPermissionView(View):
+    """
+    class-based view with check permission
+    usage:
+
+    class SomeView(CheckPermissionView):
+
+        http_method_check_permission_needed = ['post']
+
+        def check_permission(self, request):
+            if not request.user.is_staff:
+                raise Http404
+    """
+    http_method_check_permission_needed = []
+
+    def check_permission(self, request):
+        pass
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        if request.method.lower() in self.http_method_check_permission_needed:
+            self.check_permission(request)
+        return super(CheckPermissionView, self).dispatch(request, *args, **kwargs)
+
+
+class HttpBasicAuthenticationView(CheckPermissionView):
     """
     class-based view with http basic authentication.
     usage:
 
     class SomeView(HttpBasicAuthenticationView):
         http_method_authentication_needed = ['post']
-
-        def check_permission(self, request):
-            if not request.user.is_staff:
-                raise Http404
     """
-
     http_method_authentication_needed = []
-
-    def check_permission(self, request):
-        pass
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -66,6 +86,15 @@ class HttpBasicAuthenticationView(View):
         return super(HttpBasicAuthenticationView, self).dispatch(request, *args, **kwargs)
 
 
+class AdminRequiredView(CheckPermissionView):
+
+    def check_permission(self, request):
+        if not request.user or not request.user.is_staff:
+            raise Http404
+
+
+
+
 class ProjectInstanceView(HttpBasicAuthenticationView):
     """
     get:
@@ -79,6 +108,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         register application.
     """
     http_method_authentication_needed = ['post']
+    http_method_check_permission_needed = ['post']
 
     def check_permission(self, request):
         if not request.user.is_staff:
@@ -169,6 +199,53 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         return HttpResponseJson({'project_token:': project.token, 'instance_token': instance.token})
+
+
+class InstanceFileView(AdminRequiredView):
+
+    http_method_check_permission_needed = ['get', 'post']
+
+    @error_handling(error_handler)
+    def get(self, request, token):
+
+        instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
+        tempdir = temp.gettempdir()
+        zipped_file = ZipFile(instance.ipa_path.path)
+        files = zipped_file.namelist()
+        appname = None
+        for file_name in files:
+            if len(file_name.split('/')) == 2:
+                appname = file_name[1]
+                break
+        path = request.GET['path']
+
+        extracted_file = zipped_file.extract('Payload/'+appname+'.app'+path, tempdir)
+        mime = magic.from_file(extracted_file, mime=True)
+
+        response = HttpResponse(FileWrapper(extracted_file.getvalue()), content_type=mime)
+        response['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
+        return response
+
+    def post(self, request, token):
+
+        instance = Instance.objects.select_related('project__bundle_identifier', 'project__name').get(token=token)
+        zipped_file = ZipFile(instance.ipa_path.path)
+        files = zipped_file.namelist()
+
+        appname = None
+        for file_name in files:
+            if len(file_name.split('/')) == 2:
+                appname = file_name[1]
+                break
+        path = request.POST['path']
+        contents = request.POST.get('contents')
+        if not contents:
+            uploaded_file = request.FILES['file']
+            zipped_file.write(uploaded_file.temporary_file_path, 'Payload/'+appname+'.app'+path, 'w')
+        else:
+            zipped_file.writestr('Payload/'+appname+'.app'+path, contents.encode('utf8'),'w')
+        return HttpResponse('success')
+
 
 
 class FileRedirectView(View):
