@@ -9,7 +9,7 @@ iOS Beta Deploy Server
 {% block body %}
 <ul id="list">
 {% for project in projects %}
-    <li class="ui-state-default"><a href="{% url "project_view" project.token %}">{{ project.name }}</a></li>
+    <li class="ui-state-default"><a href="/{{ project.token }}">{{ project.name }}</a></li>
 {% endfor %}
 </ul>
 {% endblock %}
