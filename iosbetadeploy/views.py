@@ -216,12 +216,19 @@ class InstanceFileView(HttpBasicAuthenticationView):
                 appname = file_name.split('/')[1]
                 break
         path = request.POST['path']
+        option = request.POST.get('option')
+        options = []
+        if option:
+            options = option.split(',')
+
         contents = request.POST.get('contents')
         if not contents:
             uploaded_file = request.FILES['file']
-            zipped_file.writestr('Payload/'+appname+'.app'+path, uploaded_file.getvalue(),'w')
+            zipped_file.writestr('Payload/'+appname+'.app'+path, uploaded_file.read(),'w')
         else:
-            zipped_file.writestr('Payload/'+appname+'.app'+path, contents.encode('utf8'),'w')
+            if "convert_to_binary_plist":
+                contents = biplist.writePlistToString(contents)
+            zipped_file.writestr('Payload/'+appname+'.app'+path, contents,'w')
         return HttpResponse('success')
 
 
