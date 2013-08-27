@@ -214,7 +214,8 @@ class InstanceFileView(AdminRequiredView):
         files = zipped_file.namelist()
         appname = None
         for file_name in files:
-            if len(file_name.split('/')) == 2:
+            if len(file_name.split('/')) == 3:
+                print file_name
                 appname = file_name.split('/')[1]
                 break
         path = request.GET['path']
@@ -235,6 +236,7 @@ class InstanceFileView(AdminRequiredView):
         appname = None
         for file_name in files:
             if len(file_name.split('/')) == 2:
+                print file_name
                 appname = file_name.split('/')[1]
                 break
         path = request.POST['path']
