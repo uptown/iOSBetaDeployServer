@@ -28,41 +28,23 @@ from .utils import generate_random_from_vschar_set, HttpResponseJson, encrypt, d
 def error_handler(e):
     raise Http404
 
-
-class CheckPermissionView(View):
-    """
-    class-based view with check permission
-    usage:
-
-    class SomeView(CheckPermissionView):
-
-        http_method_check_permission_needed = ['post']
-
-        def check_permission(self, request):
-            if not request.user.is_staff:
-                raise Http404
-    """
-    http_method_check_permission_needed = []
-
-    def check_permission(self, request):
-        pass
-
-    @csrf_exempt
-    def dispatch(self, request, *args, **kwargs):
-        if request.method.lower() in self.http_method_check_permission_needed:
-            self.check_permission(request)
-        return super(CheckPermissionView, self).dispatch(request, *args, **kwargs)
-
-
-class HttpBasicAuthenticationView(CheckPermissionView):
+class HttpBasicAuthenticationView(View):
     """
     class-based view with http basic authentication.
     usage:
 
     class SomeView(HttpBasicAuthenticationView):
+        http_method_check_permission_needed = ['post']
         http_method_authentication_needed = ['post']
+        def check_permission(self, request):
+            if not request.user.is_staff:
+                raise Http404
     """
+    http_method_check_permission_needed = []
     http_method_authentication_needed = []
+
+    def check_permission(self, request):
+        pass
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -79,20 +61,14 @@ class HttpBasicAuthenticationView(CheckPermissionView):
                         if user.is_active:
                             #login(request, user)
                             request.user = user
-                            self.check_permission(request)
+                            if request.method.lower() in self.http_method_check_permission_needed:
+                                self.check_permission(request)
                             return super(HttpBasicAuthenticationView, self).dispatch(request, *args, **kwargs)
         if request.method.lower() in self.http_method_authentication_needed:
             raise Http404
+        if request.method.lower() in self.http_method_check_permission_needed:
+            self.check_permission(request)
         return super(HttpBasicAuthenticationView, self).dispatch(request, *args, **kwargs)
-
-
-class AdminRequiredView(CheckPermissionView):
-
-    def check_permission(self, request):
-        if not request.user or not request.user.is_staff:
-            raise Http404
-
-
 
 
 class ProjectInstanceView(HttpBasicAuthenticationView):
@@ -201,9 +177,12 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         return HttpResponseJson({'project_token:': project.token, 'instance_token': instance.token})
 
 
-class InstanceFileView(AdminRequiredView):
+class InstanceFileView(HttpBasicAuthenticationView):
 
     http_method_check_permission_needed = ['get', 'post']
+    def check_permission(self, request):
+        if not request.user or not request.user.is_staff:
+            raise Http404
 
     @error_handling(error_handler)
     def get(self, request, token):
