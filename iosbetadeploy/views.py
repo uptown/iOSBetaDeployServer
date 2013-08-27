@@ -221,8 +221,7 @@ class InstanceFileView(AdminRequiredView):
 
         extracted_file = zipped_file.extract('Payload/'+appname+path, tempdir)
         mime = magic.from_file(extracted_file, mime=True)
-
-        response = HttpResponse(FileWrapper(extracted_file.getvalue()), content_type=mime)
+        response = HttpResponse(open(extracted_file, "rb"), content_type=mime)
         response['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
         return response
 
