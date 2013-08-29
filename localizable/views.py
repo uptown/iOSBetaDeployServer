@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from iosbetadeploy.views import HttpBasicAuthenticationView, error_handler
 from iosbetadeploy.decorators import error_handling
 from localizable.models import LocalizableString, Project
@@ -21,6 +22,6 @@ class LocalizableStringView(HttpBasicAuthenticationView):
     def post(self, request, token, locale):
         project = Project.objects.get(token=token)
         localizableString, created_unused = LocalizableString.objects.get_or_create(project=project, locale=locale)
-        localizableString.text = urllib2.unquote(request.POST['text'])
+        localizableString.text = request.POST['text']
         localizableString.save()
         return HttpResponse("success")
