@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Create your views here.
+
 from django.views.generic import View
 from django.http import Http404, HttpResponse
 from django.db import transaction
