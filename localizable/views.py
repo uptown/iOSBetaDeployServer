@@ -22,6 +22,6 @@ class LocalizableStringView(HttpBasicAuthenticationView):
     def post(self, request, token, locale):
         project = Project.objects.get(token=token)
         localizableString, created_unused = LocalizableString.objects.get_or_create(project=project, locale=locale)
-        localizableString.text = request.POST['text']
+        localizableString.text = urllib2.unquote(request.POST['text'].encode('utf8'))
         localizableString.save()
         return HttpResponse("success")
