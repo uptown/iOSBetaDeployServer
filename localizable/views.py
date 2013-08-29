@@ -2,7 +2,7 @@ from iosbetadeploy.views import HttpBasicAuthenticationView, error_handler
 from iosbetadeploy.decorators import error_handling
 from localizable.models import LocalizableString, Project
 from django.http import HttpResponse, Http404
-
+import urllib2
 
 class LocalizableStringView(HttpBasicAuthenticationView):
     http_method_authentication_needed = ['post']
@@ -21,6 +21,6 @@ class LocalizableStringView(HttpBasicAuthenticationView):
     def post(self, request, token, locale):
         project = Project.objects.get(token=token)
         localizableString, created_unused = LocalizableString.objects.get_or_create(project=project, locale=locale)
-        localizableString.text = request.POST['text']
+        localizableString.text = urllib2.unquote(request.POST['text'])
         localizableString.save()
         return HttpResponse("success")
