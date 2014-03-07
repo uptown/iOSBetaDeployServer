@@ -145,7 +145,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             project.save()
 
         emails = []
-        with transaction.commit_on_success():
+        with transaction.atomic():
             try:
                 instance = Instance(project=project, version=version_string, build_version=bundle_version,
                                     description=log, token=generate_random_from_vschar_set(20)+".inst", name=appname)
