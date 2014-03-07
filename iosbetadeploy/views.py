@@ -125,7 +125,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         bundle_name =  info['CFBundleName']
         bundle_version = info['CFBundleVersion']
         version_string = info['CFBundleShortVersionString']
-
+        print token, info['CFBundleIdentifier']
         if token != info['CFBundleIdentifier']:
             raise Http404
         bundle_identifier = info['CFBundleIdentifier']
