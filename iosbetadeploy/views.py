@@ -52,7 +52,6 @@ class HttpBasicAuthenticationView(View):
         """
         override dispatch for handling http basic authorization
         """
-        print request.META['HTTP_AUTHORIZATION']
         if 'HTTP_AUTHORIZATION' in request.META:
             auth = request.META['HTTP_AUTHORIZATION'].split()
             if len(auth) == 2:
