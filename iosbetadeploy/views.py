@@ -18,7 +18,7 @@ import base64
 import biplist
 import time
 from zipfile import ZipFile
-import magic
+# import magic
 
 from .models import Device, Project, Instance, InstanceAllowedDevice
 from .decorators import error_handling
@@ -194,7 +194,8 @@ class InstanceFileView(HttpBasicAuthenticationView):
         path = request.GET['path']
 
         extracted_file = zipped_file.extract('Payload/' + instance.name + '.app' + path, tempdir)
-        mime = magic.from_file(extracted_file, mime=True)
+        # mime = magic.from_file(extracted_file, mime=True)
+        mime = "application/octet-stream .ipa"
         response = HttpResponse(open(extracted_file, "rb"), content_type=mime)
         response['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
         return response
