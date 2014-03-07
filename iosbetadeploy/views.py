@@ -145,8 +145,8 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             project.save()
 
         emails = []
-        with transaction.atomic():
-            try:
+        try:
+            with transaction.atomic():
                 instance = Instance(project=project, version=version_string, build_version=bundle_version,
                                     description=log, token=generate_random_from_vschar_set(20)+".inst", name=appname)
                 instance.save()
@@ -155,10 +155,8 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
                     InstanceAllowedDevice.objects.create(instance=instance, device=device)
                     if device.email and len(device.email) > 0:
                         emails.append(device.email)
-                transaction.commit()
-            except Exception:
-                transaction.rollback()
-                raise
+        except Exception:
+            raise
         try:
             instance.ipa_path.save(generate_random_from_vschar_set(20), request.FILES['instance'], True)
         except Exception:
