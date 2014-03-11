@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib import admin
-# Create your models here.
-
 
 
 class Project(models.Model):
@@ -14,6 +12,7 @@ class Project(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Instance(models.Model):
     token = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=255, blank=True, default="")
@@ -21,7 +20,7 @@ class Instance(models.Model):
     version = models.CharField(max_length=30)
     build_version = models.CharField(max_length=30)
     description = models.TextField()
-    create_date = models.DateTimeField(auto_now=True)
+    create_date = models.DateTimeField(auto_now_add=True)
     is_showing = models.BooleanField(default=True, db_index=True)
     ipa_path = models.FileField(default=None, blank=True, null=True, upload_to="instances")
 
@@ -31,6 +30,7 @@ class Instance(models.Model):
     def __unicode__(self):
         return self.project.name + " " + self.version + "(" + self.build_version + ")"
 
+
 class Device(models.Model):
     udid = models.CharField(max_length=50)
     name = models.CharField(max_length=50,default="Unknown Device")
@@ -39,6 +39,7 @@ class Device(models.Model):
 
     def __unicode__(self):
         return self.name + " " + self.udid
+
 
 class InstanceAllowedDevice(models.Model):
     device = models.ForeignKey(Device)

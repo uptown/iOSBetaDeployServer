@@ -11,6 +11,7 @@ from django.core.files import temp
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.conf import settings
 
 
 import plistlib
@@ -98,14 +99,14 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
             project = Project.objects.get(token=token)
             instances = Instance.objects.filter(project=project).filter(is_showing=True).order_by('-create_date')
             return render_to_response('Project.html', {"project": project,'instances':instances,
-                                                       'domain': request.META['HTTP_HOST']})
+                                                       'domain': settings.DEPLOY_DOMAIN})
 
         elif postfix == 'inst':
             instance = Instance.objects.select_related('project__bundle_identifier','project__name').get(token=token)
             file_key = encrypt((str(int(time.time()))+':'+generate_random_from_vschar_set(3)).encode('utf8'), token.encode('utf8'))
             #TODO: find clear way to get domain
             return render_to_response('manifest.xml', {"instance": instance, 'file_key':file_key,
-                                                       'domain': request.META['HTTP_HOST']})
+                                                       'domain': settings.DEPLOY_DOMAIN})
 
 
 
@@ -168,7 +169,7 @@ class ProjectInstanceView(HttpBasicAuthenticationView):
         from_email = "uptown@mironi.pl"
 
         html_content = render_to_string('Email.html',
-                                        {'instance': instance,'project': project, 'domain': request.META['HTTP_HOST']})
+                                        {'instance': instance,'project': project, 'domain': settings.DEPLOY_DOMAIN})
         text_content = strip_tags(html_content)
         msg = EmailMultiAlternatives(mail_title, text_content, from_email, emails)
         msg.attach_alternative(html_content, "text/html")
