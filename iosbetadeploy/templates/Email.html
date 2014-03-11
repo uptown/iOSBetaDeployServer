@@ -10,7 +10,7 @@ iOS Beta
 <h1>{{ project.name }}</h1>
 {% url "project_view" instance.token as instance_url %}
 
-<p>Click on iOS Devices. <a href="itms-services://?action=download-manifest&url=https://{{ domain }}{{ instance_url|urlencode }}">
+<p>Click on iOS Devices. <a href="itms-services://?action=download-manifest&url={{ domain }}{{ instance_url|urlencode }}">
     {{ project.name }} {{ instance.version }}(BN {{ instance.build_version }}) {{ instance.create_date|date:"y/m/d h:m" }}</a>
 </p>
 <p>If the link is broken, <a href="http://{{ domain }}{% url "project_view" project.token %}">click this</a></p>
