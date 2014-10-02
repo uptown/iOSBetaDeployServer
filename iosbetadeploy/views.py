@@ -59,6 +59,7 @@ class HttpBasicAuthenticationView(View):
                 if auth[0].lower() == "basic":
                     username, password = base64.b64decode(auth[1]).split(':')
                     user = authenticate(username=username, password=password)
+                    print user
                     if user is not None:
                         if user.is_active:
                             #login(request, user)
