@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 from iosbetadeploy.views import IndexView, ProjectInstanceView, FileRedirectView, InstanceFileView
-#from localizable.views import LocalizableStringView
+from localizable.views import LocalizableStringView
 from django.conf import settings
 from os import path
 admin.autodiscover()
@@ -21,7 +21,7 @@ urlpatterns = patterns('',
     url(r'^(?P<token>[\w\.]+)$', ProjectInstanceView.as_view(), name="project_view"),
     url(r'^(?P<token>[\w\.]+)/file_manager$', InstanceFileView.as_view(), name="instancefile_view"),
     url(r'^(?P<token>[\w\.]+)/(?P<key>[\w\-=]+)$', FileRedirectView.as_view(), name="file_redirection_view"),
-#    url(r'^(?P<token>[\w\.]+)/localizable/(?P<locale>[\w\-=]+)$', LocalizableStringView.as_view()),
+    url(r'^(?P<token>[\w\.]+)/localizable/(?P<locale>[\w\-=]+)$', LocalizableStringView.as_view()),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': './static'}),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': "./media"}),
 
